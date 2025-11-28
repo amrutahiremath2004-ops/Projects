@@ -16,19 +16,32 @@ const hrData = {
 
 // API Endpoint
 app.post("/ask", (req, res) => {
-    const q = req.body.question.toLowerCase();
+    const question = req.body.question.toLowerCase().trim();
+    
+    if (!question) {
+        return res.json({ reply: "Please ask a valid question." });
+    }
+
     let reply = "Sorry, I don't have information about that.";
 
+    // Check keywords in user question
     for (const keyword in hrData) {
-        if (q.includes(keyword)) {
-            reply = hrData[keyword];
+        const words = keyword.split(" "); // split keyword into individual words
+        for (const word of words) {
+            if (question.includes(word)) {
+                reply = hrData[keyword];
+                break;
+            }
         }
+        if (reply !== "Sorry, I don't have information about that.") break;
     }
 
     res.json({ reply });
 });
 
+
 // Start server
-app.listen(3000, () => {
-    console.log("HR Assistant running on port 3000");
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`HR Assistant running on http://localhost:${PORT}`);
 });
