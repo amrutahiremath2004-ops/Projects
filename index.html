@@ -1,29 +1,217 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>HR Assistant Agent</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Assistant Chatbot</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f6fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            background: #fff;
+            width: 800px;
+            max-width: 95%;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #40739e;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            background-color: #f1f2f6;
+            overflow-y: auto;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .bubble.user {
+            background-color: #40739e;
+            color: #fff;
+            border-bottom-right-radius: 0;
+        }
+
+        .bubble.assistant {
+            background-color: #dcdde1;
+            color: #2f3640;
+            border-bottom-left-radius: 0;
+        }
+
+        .input-section {
+            display: flex;
+            border-top: 1px solid #dcdde1;
+        }
+
+        input#question {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            font-size: 16px;
+            border-radius: 0;
+        }
+
+        input#question:focus {
+            outline: none;
+        }
+
+        button {
+            padding: 12px 15px;
+            border: none;
+            background-color: #40739e;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2f3640;
+        }
+
+        .assistant-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #40739e;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
 </head>
-<body style="font-family: Arial; padding: 20px;">
-    <h2>HR Assistant Chatbot</h2>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">HR Assistant Chatbot</div>
 
-    <input id="question" placeholder="Ask about policies, leave, benefits..." style="width:300px; padding:10px;">
-    <button onclick="ask()">Send</button>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message assistant">
+               <img src="https://i.ibb.co/N2CmT2N/hr-ai-assistant.png" alt="AI Assistant" class="assistant-image">
 
-    <p id="answer" style="margin-top:20px; font-size:18px;"></p>
+                <div class="bubble assistant">Hello! I'm your HR Assistant. Ask me about policies, leave, or benefits.</div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <input id="question" placeholder="Type your message...">
+            <button onclick="ask()">Send</button>
+        </div>
+    </div>
 
     <script>
-        async function ask() {
-            const question = document.getElementById("question").value;
+        const chatMessages = document.getElementById("chat-messages");
 
-            const response = await fetch("http://localhost:3000/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question })
-            });
+        function appendMessage(text, sender = 'user') {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", sender);
 
-            const data = await response.json();
-            document.getElementById("answer").innerText = "Answer: " + data.reply;
+            const bubbleDiv = document.createElement("div");
+            bubbleDiv.classList.add("bubble", sender);
+            bubbleDiv.innerText = text;
+
+            if(sender === 'assistant') {
+                const img = document.createElement("img");
+                img.src = "https://i.ibb.co/7r0bZ9S/ai-assistant.png";
+                img.classList.add("assistant-image");
+                messageDiv.appendChild(img);
+            }
+
+            messageDiv.appendChild(bubbleDiv);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+
+        async function ask() {
+            const questionInput = document.getElementById("question");
+            const question = questionInput.value.trim();
+            if(!question) return;
+
+            appendMessage(question, 'user');
+            questionInput.value = '';
+
+            const loaderBubble = document.createElement("div");
+            loaderBubble.classList.add("bubble", "assistant");
+            loaderBubble.innerHTML = '<div class="loader"></div>';
+
+            const loaderMessage = document.createElement("div");
+            loaderMessage.classList.add("message", "assistant");
+            const img = document.createElement("img");
+            img.src = "https://i.ibb.co/7r0bZ9S/ai-assistant.png";
+            img.classList.add("assistant-image");
+            loaderMessage.appendChild(img);
+            loaderMessage.appendChild(loaderBubble);
+            chatMessages.appendChild(loaderMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch("http://localhost:3000/ask", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question })
+                });
+                const data = await response.json();
+
+                chatMessages.removeChild(loaderMessage);
+                appendMessage(data.reply, 'assistant');
+            } catch (err) {
+                chatMessages.removeChild(loaderMessage);
+                appendMessage("Sorry, I couldn't connect to the server.", 'assistant');
+            }
+        }
+
+        document.getElementById("question").addEventListener("keypress", function(e){
+            if(e.key === "Enter") ask();
+        });
     </script>
 </body>
 </html>
