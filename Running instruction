@@ -1,0 +1,68 @@
+Step 1: Create Project Folder
+
+Create a folder for project, e.g., HR_Assistant. Inside it, create two files:
+
+server.js → Node.js backend
+
+index.html →frontend HTML
+
+Directory structure:
+
+HR_Assistant/
+├── server.js
+└── index.html
+
+
+
+Step 2: Install Node.js Dependencies
+
+Open a terminal in your project folder (HR_Assistant).
+
+Initialize npm:
+
+npm init -y
+
+Install required packages:
+
+npm install express cors
+
+
+
+Step 3: Run the Backend Server
+
+In your terminal:
+
+node server.js
+
+You should see:
+
+HR Assistant running on http://localhost:3000
+
+
+Step 4: Open Frontend
+
+Open index.html in your browser (double-click the file or use VS Code “Open with Live Server”).
+
+You should see the chatbot interface.
+
+Type questions like:
+
+"leave policy"
+
+"benefits"
+
+"salary"
+
+Your backend will respond with predefined HR answers.
+
+
+
+Step 5: Test
+
+Type "leave policy" → should reply with leave details.
+
+Type "benefits" → should reply with company benefits.
+
+Type unknown question → should reply:
+
+Sorry, I don't have information about that.
