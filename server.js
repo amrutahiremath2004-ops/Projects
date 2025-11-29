@@ -1,9 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files (including index.html) from current folder
+app.use(express.static(__dirname));
 
 // Predefined HR answers
 const hrData = {
@@ -16,32 +21,26 @@ const hrData = {
 
 // API Endpoint
 app.post("/ask", (req, res) => {
-    const question = req.body.question.toLowerCase().trim();
-    
-    if (!question) {
-        return res.json({ reply: "Please ask a valid question." });
+  const question = req.body.question.toLowerCase().trim();
+  if (!question) return res.json({ reply: "Please ask a valid question." });
+
+  let reply = "Sorry, I don't have information about that.";
+  for (const keyword in hrData) {
+    const words = keyword.split(" ");
+    for (const word of words) {
+      if (question.includes(word)) {
+        reply = hrData[keyword];
+        break;
+      }
     }
+    if (reply !== "Sorry, I don't have information about that.") break;
+  }
 
-    let reply = "Sorry, I don't have information about that.";
-
-    // Check keywords in user question
-    for (const keyword in hrData) {
-        const words = keyword.split(" "); // split keyword into individual words
-        for (const word of words) {
-            if (question.includes(word)) {
-                reply = hrData[keyword];
-                break;
-            }
-        }
-        if (reply !== "Sorry, I don't have information about that.") break;
-    }
-
-    res.json({ reply });
+  res.json({ reply });
 });
 
-
-// Start server
-const PORT = 3000;
+// Dynamic port for Render or localhost
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`HR Assistant running on http://localhost:${PORT}`);
+  console.log(`HR Assistant running on port ${PORT}`);
 });
